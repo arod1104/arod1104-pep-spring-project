@@ -3,6 +3,8 @@ package com.example.service;
 import com.example.entity.Account;
 import com.example.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,12 +16,29 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     /**
+     * Validates the username and password of an account.
+     * 
+     * @param account The account object containing username and password.
+     * @return true if the username and password are valid, false otherwise.
+     */
+    public boolean isUsernameAndPasswordValid(Account account) {
+        // Validate username and password
+        if (account.getUsername() == null || account.getUsername().isBlank()) {
+            return false;
+        }
+        if (account.getPassword() == null || account.getPassword().length() < 4) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Retrieves an account by its ID.
      * 
      * @param id The ID of the account to retrieve.
      * @return An Optional containing the account if found, or an empty Optional if not found.
      */
-    public Optional<Account> findById(Integer id) {
+    public Optional<Account> getAccountById(Integer id) {
         return accountRepository.findById(id);
     }
 
@@ -29,8 +48,18 @@ public class AccountService {
      * @param username The username of the account to retrieve.
      * @return An Optional containing the account if found, or an empty Optional if not found.
      */
-    public Optional<Account> findByUsername(String username) {
+    public Optional<Account> getAccountByUsername(String username) {
         return accountRepository.findByUsername(username);
+    }
+
+    /**
+     * Retrieves an account by its username and password.
+     * 
+     * @param account The account object containing username and password.
+     * @return An Optional containing the account if found, or an empty Optional if not found.
+     */
+    public Optional<Account> getAccountByUsernameAndPassword(Account account) {
+        return accountRepository.findByUsernameAndPassword(account.getUsername(), account.getPassword());
     }
 
     /**

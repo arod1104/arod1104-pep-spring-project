@@ -1,17 +1,40 @@
 package com.example.service;
 
+import com.example.entity.Account;
 import com.example.entity.Message;
 import com.example.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class MessageService {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private AccountService accountService;
+
+    /**
+     * Validates the content of a message.
+     * 
+     * @param message The message object to be validated.
+     * @return true if the message is valid, false otherwise.
+     */
+    public boolean isMessageValid(Message message) {
+        // Validate message content
+        if (message.getMessageText() == null || message.getMessageText().isBlank()) {
+            return false;
+        }
+        if (message.getMessageText().length() > 255) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Saves a new message to the database.
@@ -42,6 +65,23 @@ public class MessageService {
         return messageRepository.findById(messageId).orElse(null);
     }
 
+
+    /**
+     * Updates a specific message by its ID.
+     * 
+     * @param messageId The ID of the message to update.
+     * @return The updated message object if found, or null if not found.
+     */
+    public Message updateMessageById(Integer messageId) {
+        Message message = getMessageById(messageId);
+        if (message != null) {
+            // Update the message content
+            message.setMessageText("Updated message text");
+            return messageRepository.save(message);
+        }
+        return null;
+    }
+
     /**
      * Deletes a specific message by its ID.
      * 
@@ -63,6 +103,12 @@ public class MessageService {
      * @return A list of messages posted by the user.
      */
     public List<Message> getMessagesByAccountId(Integer accountId) {
+        // Validate if the account exists
+        Account existingAccount = accountService.getAccountById(accountId).orElse(null);
+        if (existingAccount == null) {
+            return new ArrayList<>();
+        }
+
         return messageRepository.findAllByPostedBy(accountId);
     }
 }

@@ -32,15 +32,12 @@ public class SocialMediaController {
     @PostMapping("/register")
     public ResponseEntity<?> registerAccount(@RequestBody Account account) {
         // Validate username and password
-        if (account.getUsername() == null || account.getUsername().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username cannot be blank.");
-        }
-        if (account.getPassword() == null || account.getPassword().length() < 4) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password must be at least 4 characters long.");
+        if (!accountService.isUsernameAndPasswordValid(account)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username or password.");
         }
 
         // Check for duplicate username
-        if (accountService.findByUsername(account.getUsername()).isPresent()) {
+        if (accountService.getAccountByUsername(account.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
         }
 
@@ -59,17 +56,14 @@ public class SocialMediaController {
     @PostMapping("/login")
     public ResponseEntity<?> loginAccount(@RequestBody Account account) {
         // Validate username and password
-        if (account.getUsername() == null || account.getUsername().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username cannot be blank.");
-        }
-        if (account.getPassword() == null || account.getPassword().length() < 4) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password must be at least 4 characters long.");
+        if (!accountService.isUsernameAndPasswordValid(account)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username or password.");
         }
 
         // Check for existing account
-        Account existingAccount = accountService.findByUsername(account.getUsername()).orElse(null);
-        if (existingAccount == null || !existingAccount.getPassword().equals(account.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        Account existingAccount = accountService.getAccountByUsernameAndPassword(account).orElse(null);
+        if (existingAccount == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Account does not exist.");
         }
 
         // Return the Account object as the response body
@@ -86,15 +80,12 @@ public class SocialMediaController {
     @PostMapping("/messages")
     public ResponseEntity<?> createMessage(@RequestBody Message message) {
         // Validate messageText
-        if (message.getMessageText() == null || message.getMessageText().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message text cannot be blank.");
-        }
-        if (message.getMessageText().length() > 255) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message text cannot exceed 255 characters.");
+        if (!messageService.isMessageValid(message)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid message text.");
         }
 
         // Validate postedBy (user must exist)
-        Account existingAccount = accountService.findById(message.getPostedBy()).orElse(null);
+        Account existingAccount = accountService.getAccountById(message.getPostedBy()).orElse(null);
         if (existingAccount == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("PostedBy (user ID) cannot be null. User does not exist.");
         }
@@ -164,23 +155,15 @@ public class SocialMediaController {
     @PatchMapping("/messages/{messageId}")
     public ResponseEntity<?> updateMessage(@PathVariable Integer messageId, @RequestBody Message message) {
         // Validate messageText
-        if (message.getMessageText() == null || message.getMessageText().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message text cannot be blank.");
-        }
-        if (message.getMessageText().length() > 255) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message text cannot exceed 255 characters.");
+        if (!messageService.isMessageValid(message)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid message text.");
         }
 
         // Fetch the existing message
-        Message existingMessage = messageService.getMessageById(messageId);
-        if (existingMessage == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message not found.");
+        Message updatedMessage = messageService.updateMessageById(messageId);
+        if (updatedMessage == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Message does not exist.");
         }
-
-        // Update the message
-        existingMessage.setMessageText(message.getMessageText());
-        messageService.saveMessage(existingMessage);
-
         return ResponseEntity.ok(1);
     }
 
@@ -193,12 +176,6 @@ public class SocialMediaController {
      */
     @GetMapping("/accounts/{accountId}/messages")
     public ResponseEntity<?> getMessagesByAccountId(@PathVariable Integer accountId) {
-        // Validate if the account exists
-        Account existingAccount = accountService.findById(accountId).orElse(null);
-        if (existingAccount == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ArrayList<>());
-        }
-
         // Fetch messages by account ID
         List<Message> messages = messageService.getMessagesByAccountId(accountId);
 
