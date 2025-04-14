@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Integer> {
-    // Additional query methods can be defined here if needed
-
-    List<Message> findAllByAccountId(Integer accountId);
+    List<Message> findAllByPostedBy(Integer postedBy);
 }

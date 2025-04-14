@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -136,9 +137,17 @@ public class SocialMediaController {
 
     @GetMapping("/accounts/{accountId}/messages")
     public ResponseEntity<?> getMessagesByAccountId(@PathVariable Integer accountId) {
+        // Validate if the account exists
+        Account existingAccount = accountService.findById(accountId).orElse(null);
+        if (existingAccount == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ArrayList<>());
+        }
+
         // Fetch messages by account ID
         List<Message> messages = messageService.getMessagesByAccountId(accountId);
 
+        // Return the list of messages (empty list if no messages exist)
         return ResponseEntity.ok(messages);
     }
+
 }
