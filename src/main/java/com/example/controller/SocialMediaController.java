@@ -22,6 +22,13 @@ public class SocialMediaController {
     @Autowired
     private MessageService messageService;
 
+    /**
+     * Endpoint to register a new user account.
+     * Validates the username and password, checks for duplicate usernames, and saves the account if valid.
+     * 
+     * @param account The account object containing username and password.
+     * @return ResponseEntity with the saved account or an error message.
+     */
     @PostMapping("/register")
     public ResponseEntity<?> registerAccount(@RequestBody Account account) {
         // Validate username and password
@@ -42,6 +49,13 @@ public class SocialMediaController {
         return ResponseEntity.ok(savedAccount);
     }
 
+    /**
+     * Endpoint to log in a user.
+     * Validates the username and password, and checks if the credentials match an existing account.
+     * 
+     * @param account The account object containing username and password.
+     * @return ResponseEntity with the account object if login is successful, or an error message if not.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> loginAccount(@RequestBody Account account) {
         // Validate username and password
@@ -62,6 +76,13 @@ public class SocialMediaController {
         return ResponseEntity.ok(existingAccount);
     }
 
+    /**
+     * Endpoint to create a new message.
+     * Validates the message text and the user who posted it, then saves the message if valid.
+     * 
+     * @param message The message object containing the text and the user ID of the poster.
+     * @return ResponseEntity with the saved message or an error message.
+     */
     @PostMapping("/messages")
     public ResponseEntity<?> createMessage(@RequestBody Message message) {
         // Validate messageText
@@ -83,12 +104,25 @@ public class SocialMediaController {
         return ResponseEntity.ok(savedMessage);
     }
 
+    /**
+     * Endpoint to retrieve all messages.
+     * Fetches all messages from the database.
+     * 
+     * @return ResponseEntity with a list of all messages.
+     */
     @GetMapping("/messages")
     public ResponseEntity<?> getAllMessages() {
         // Fetch all messages
         return ResponseEntity.ok(messageService.getAllMessages());
     }
 
+    /**
+     * Endpoint to retrieve a specific message by its ID.
+     * Fetches the message if it exists, or returns null if it does not.
+     * 
+     * @param messageId The ID of the message to retrieve.
+     * @return ResponseEntity with the message object or null.
+     */
     @GetMapping("/messages/{messageId}")
     public ResponseEntity<?> getMessageById(@PathVariable Integer messageId) {
         // Fetch message by ID
@@ -101,6 +135,13 @@ public class SocialMediaController {
         return ResponseEntity.ok(message);
     }
 
+    /**
+     * Endpoint to delete a specific message by its ID.
+     * Deletes the message if it exists, or returns an empty response if it does not.
+     * 
+     * @param messageId The ID of the message to delete.
+     * @return ResponseEntity with 1 if the message was deleted, or an empty response if not.
+     */
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<?> deleteMessageById(@PathVariable Integer messageId) {
         // Delete the message
@@ -112,6 +153,14 @@ public class SocialMediaController {
         return ResponseEntity.status(HttpStatus.OK).body(1);
     }
 
+    /**
+     * Endpoint to update a specific message by its ID.
+     * Validates the new message text, fetches the existing message, and updates it if valid.
+     * 
+     * @param messageId The ID of the message to update.
+     * @param message The message object containing the new text.
+     * @return ResponseEntity with 1 if the message was updated, or an error message if not.
+     */
     @PatchMapping("/messages/{messageId}")
     public ResponseEntity<?> updateMessage(@PathVariable Integer messageId, @RequestBody Message message) {
         // Validate messageText
@@ -135,6 +184,13 @@ public class SocialMediaController {
         return ResponseEntity.ok(1);
     }
 
+    /**
+     * Endpoint to retrieve all messages posted by a specific user.
+     * Validates if the user exists, then fetches all messages associated with the user's account ID.
+     * 
+     * @param accountId The ID of the user whose messages are to be retrieved.
+     * @return ResponseEntity with a list of messages or an empty list if no messages exist.
+     */
     @GetMapping("/accounts/{accountId}/messages")
     public ResponseEntity<?> getMessagesByAccountId(@PathVariable Integer accountId) {
         // Validate if the account exists
