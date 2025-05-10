@@ -89,6 +89,6 @@ The API exposes the following endpoints:
 
 You can use tools like Postman or curl to interact with the API. See the user stories in this README for detailed request/response expectations.
 
-## License
+## Contributors
 
-This project uses the following license: [MIT](https://opensource.org/license/mit).
+- [arod1104](https://github.com/arod1104)
